@@ -52,7 +52,7 @@ def mark(event_id):
 @login_required
 def view(event_id):
     event = Event.query.get_or_404(event_id)
-    if event.creator_id != current_user.id:
+    if current_user.role != 'teacher' or event.creator_id != current_user.id:
         flash('You do not have permission to view attendance for this event.')
         return redirect(url_for('events.index'))
     

@@ -11,7 +11,10 @@ bp = Blueprint('events', __name__, url_prefix='/events')
 @bp.route('/')
 @login_required
 def index():
-    events = Event.query.filter_by(creator_id=current_user.id).order_by(Event.start_time.desc()).all()
+    if current_user.role == 'teacher':
+        events = Event.query.filter_by(creator_id=current_user.id).order_by(Event.start_time.desc()).all()
+    else:
+        events = Event.query.order_by(Event.start_time.desc()).all()
     return render_template('events/index.html', events=events)
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -79,7 +82,7 @@ def create():
 @login_required
 def view(id):
     event = Event.query.get_or_404(id)
-    if event.creator_id != current_user.id:
+    if current_user.role == 'teacher' and event.creator_id != current_user.id:
         flash('You do not have permission to view this event.')
         return redirect(url_for('events.index'))
     return render_template('events/view.html', event=event)

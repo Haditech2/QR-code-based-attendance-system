@@ -17,17 +17,68 @@
                     <strong><i class="bi bi-clock"></i> End:</strong>
                     {{ event.end_time.strftime('%Y-%m-%d %H:%M') }}
                 </div>
+                <div class="mb-4">
+                    <div class="alert alert-info">
+                        <strong><i class="bi bi-hourglass-split"></i> Time Remaining:</strong>
+                        <span id="countdown" data-end="{{ event.end_time.isoformat() }}" 
+                              data-start="{{ event.start_time.isoformat() }}">
+                            Calculating...
+                        </span>
+                    </div>
+                </div>
                 <div class="d-flex gap-2">
                     <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back to Events
                     </a>
+                    {% if current_user.role == 'teacher' %}
                     <a href="{{ url_for('attendance.view', event_id=event.id) }}" class="btn btn-primary">
                         <i class="bi bi-list-check"></i> View Attendance
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('attendance.mark', event_id=event.id) }}" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Mark Attendance
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
+
+        {% if current_user.role == 'teacher' %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Attendance Statistics</h5>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ event.attendances|selectattr('status', 'equalto', 'present')|list|length }}</h3>
+                                <p class="mb-0">Present</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ event.attendances|selectattr('status', 'equalto', 'late')|list|length }}</h3>
+                                <p class="mb-0">Late</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ event.attendances|selectattr('status', 'equalto', 'absent')|list|length }}</h3>
+                                <p class="mb-0">Absent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
+
+    {% if current_user.role == 'teacher' %}
     <div class="col-md-4">
         <div class="card">
             <div class="card-body text-center">
@@ -51,5 +102,48 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateCountdown() {
+    const countdownElement = document.getElementById('countdown');
+    const endTime = new Date(countdownElement.dataset.end);
+    const startTime = new Date(countdownElement.dataset.start);
+    const now = new Date();
+
+    if (now < startTime) {
+        // Event hasn't started yet
+        const timeToStart = startTime - now;
+        const days = Math.floor(timeToStart / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeToStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeToStart % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeToStart % (1000 * 60)) / 1000);
+
+        countdownElement.innerHTML = `Event starts in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.parentElement.className = 'alert alert-warning';
+    } else if (now > endTime) {
+        // Event has ended
+        countdownElement.innerHTML = 'Event has ended';
+        countdownElement.parentElement.className = 'alert alert-danger';
+    } else {
+        // Event is ongoing
+        const timeLeft = endTime - now;
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        countdownElement.innerHTML = `Time remaining: ${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.parentElement.className = 'alert alert-success';
+    }
+}
+
+// Update countdown every second
+setInterval(updateCountdown, 1000);
+// Initial update
+updateCountdown();
+</script>
 {% endblock %} 

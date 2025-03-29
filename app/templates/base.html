@@ -81,7 +81,7 @@
         // Auto-dismiss flash messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
-                const alerts = document.querySelectorAll('.alert');
+                const alerts = document.querySelectorAll('.alert.alert-dismissible');
                 alerts.forEach(function(alert) {
                     const bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
@@ -89,6 +89,7 @@
             }, 5000);
         });
     </script>
+    {% block scripts %}{% endblock %}
     {% block extra_js %}{% endblock %}
 </body>
 </html> 
