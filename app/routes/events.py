@@ -23,8 +23,14 @@ def create():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
+        
+        # Parse the datetime strings and convert to UTC
         start_time = datetime.strptime(request.form.get('start_time'), '%Y-%m-%dT%H:%M')
         end_time = datetime.strptime(request.form.get('end_time'), '%Y-%m-%dT%H:%M')
+        
+        # Add debug logging
+        print(f"Creating event with start time: {start_time}")
+        print(f"Creating event with end time: {end_time}")
         
         event = Event(
             title=title,

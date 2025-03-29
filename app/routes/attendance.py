@@ -11,13 +11,20 @@ bp = Blueprint('attendance', __name__, url_prefix='/attendance')
 @login_required
 def mark(event_id):
     event = Event.query.get_or_404(event_id)
-    current_time = datetime.now()  # Use local time instead of UTC
+    current_time = datetime.now()
+    
+    # Add debug logging
+    print(f"Current time: {current_time}")
+    print(f"Event start time: {event.start_time}")
+    print(f"Event end time: {event.end_time}")
     
     # Check if event is active
     if current_time < event.start_time:
+        print(f"Event not started yet. Current time: {current_time}, Start time: {event.start_time}")
         flash('Event has not started yet.')
         return redirect(url_for('events.index'))
     if current_time > event.end_time:
+        print(f"Event has ended. Current time: {current_time}, End time: {event.end_time}")
         flash('Event has ended.')
         return redirect(url_for('events.index'))
     
@@ -36,6 +43,7 @@ def mark(event_id):
     late_threshold = event.start_time + timedelta(minutes=15)
     if current_time > late_threshold:
         status = 'late'
+        print(f"Marking as late. Current time: {current_time}, Late threshold: {late_threshold}")
     
     attendance = Attendance(
         user_id=current_user.id,
