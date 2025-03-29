@@ -1,117 +1,98 @@
-<<<<<<< HEAD
 {% extends "base.html" %}
 
 {% block title %}{{ event.title }} - QR Attendance System{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h2 class="card-title">{{ event.title }}</h2>
-                <p class="card-text">{{ event.description }}</p>
-                <div class="mb-3">
-                    <strong><i class="bi bi-calendar"></i> Start:</strong>
-                    {{ event.start_time.strftime('%Y-%m-%d %H:%M') }}
-                </div>
-                <div class="mb-3">
-                    <strong><i class="bi bi-clock"></i> End:</strong>
-                    {{ event.end_time.strftime('%Y-%m-%d %H:%M') }}
-                </div>
-                <div class="mb-4">
-                    <div class="alert alert-info">
-                        <strong><i class="bi bi-hourglass-split"></i> Time Remaining:</strong>
-                        <span id="countdown" data-end="{{ event.end_time.isoformat() }}" 
-                              data-start="{{ event.start_time.isoformat() }}">
-                            Calculating...
-                        </span>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="card-title">{{ event.title }}</h1>
+                    <p class="card-text">{{ event.description }}</p>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar"></i> {{ event.start_time.strftime('%Y-%m-%d %H:%M') }}
+                        </small>
                     </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to Events
-                    </a>
-                    {% if current_user.role == 'teacher' %}
-                    <a href="{{ url_for('attendance.view', event_id=event.id) }}" class="btn btn-primary">
-                        <i class="bi bi-list-check"></i> View Attendance
-                    </a>
-                    {% else %}
-                    <a href="{{ url_for('attendance.mark', event_id=event.id) }}" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Mark Attendance
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        {% if current_user.role == 'teacher' %}
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Attendance Statistics</h5>
-                <div class="row">
-                    <div class="col-sm-4">
-                        <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ event.attendances|selectattr('status', 'equalto', 'present')|list|length }}</h3>
-                                <p class="mb-0">Present</p>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ event.end_time.strftime('%H:%M') }}
+                        </small>
                     </div>
-                    <div class="col-sm-4">
-                        <div class="card bg-warning text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ event.attendances|selectattr('status', 'equalto', 'late')|list|length }}</h3>
-                                <p class="mb-0">Late</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="card bg-danger text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ event.attendances|selectattr('status', 'equalto', 'absent')|list|length }}</h3>
-                                <p class="mb-0">Absent</p>
-                            </div>
+                    <div class="mb-3">
+                        <div class="alert alert-info p-2 mb-0">
+                            <small>
+                                <i class="bi bi-hourglass-split"></i>
+                                <span class="countdown" 
+                                      data-end="{{ event.end_time.isoformat() }}"
+                                      data-start="{{ event.start_time.isoformat() }}">
+                                    Calculating...
+                                </span>
+                            </small>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% endif %}
-    </div>
 
-    {% if current_user.role == 'teacher' %}
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <h5 class="card-title">Attendance QR Code</h5>
-                {% if event.qr_code_path %}
-                <img src="{{ url_for('static', filename=event.qr_code_path) }}" 
-                     alt="Event QR Code" 
-                     class="img-fluid qr-code mb-3">
-                <div>
-                    <a href="{{ url_for('static', filename=event.qr_code_path) }}" 
-                       download="event_{{ event.id }}_qr.png"
-                       class="btn btn-outline-primary">
-                        <i class="bi bi-download"></i> Download QR Code
-                    </a>
+            {% if current_user.role == 'teacher' %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Attendance List</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendance in event.attendances %}
+                                <tr>
+                                    <td>{{ attendance.user.username }}</td>
+                                    <td>
+                                        <span class="badge {% if attendance.status == 'present' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ attendance.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ attendance.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No attendance records yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                {% else %}
-                <div class="alert alert-warning">
-                    QR code not generated yet.
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">QR Code</h5>
+                    <div class="text-center">
+                        <img src="{{ url_for('events.qr_code', id=event.id) }}" alt="QR Code" class="img-fluid qr-code">
+                        <p class="mt-2">
+                            <small class="text-muted">Scan this QR code to mark attendance</small>
+                        </p>
+                    </div>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
-    {% endif %}
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
 function updateCountdown() {
-    const countdownElement = document.getElementById('countdown');
+    const countdownElement = document.querySelector('.countdown');
     const endTime = new Date(countdownElement.dataset.end);
     const startTime = new Date(countdownElement.dataset.start);
     const now = new Date();
@@ -124,12 +105,12 @@ function updateCountdown() {
         const minutes = Math.floor((timeToStart % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeToStart % (1000 * 60)) / 1000);
 
-        countdownElement.innerHTML = `Event starts in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
-        countdownElement.parentElement.className = 'alert alert-warning';
+        countdownElement.innerHTML = `Starts in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.parentElement.parentElement.className = 'alert alert-warning p-2 mb-0';
     } else if (now > endTime) {
         // Event has ended
         countdownElement.innerHTML = 'Event has ended';
-        countdownElement.parentElement.className = 'alert alert-danger';
+        countdownElement.parentElement.parentElement.className = 'alert alert-danger p-2 mb-0';
     } else {
         // Event is ongoing
         const timeLeft = endTime - now;
@@ -137,8 +118,8 @@ function updateCountdown() {
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-        countdownElement.innerHTML = `Time remaining: ${hours}h ${minutes}m ${seconds}s`;
-        countdownElement.parentElement.className = 'alert alert-success';
+        countdownElement.innerHTML = `Time left: ${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.parentElement.parentElement.className = 'alert alert-success p-2 mb-0';
     }
 }
 
@@ -147,66 +128,4 @@ setInterval(updateCountdown, 1000);
 // Initial update
 updateCountdown();
 </script>
-=======
-{% extends "base.html" %}
-
-{% block title %}{{ event.title }} - QR Attendance System{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h2 class="card-title">{{ event.title }}</h2>
-                <p class="card-text">{{ event.description }}</p>
-                <div class="mb-3">
-                    <strong><i class="bi bi-calendar"></i> Start:</strong>
-                    {{ event.start_time.strftime('%Y-%m-%d %H:%M') }}
-                </div>
-                <div class="mb-3">
-                    <strong><i class="bi bi-clock"></i> End:</strong>
-                    {{ event.end_time.strftime('%Y-%m-%d %H:%M') }}
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to Events
-                    </a>
-                    {% if current_user.role == 'teacher' %}
-                    <a href="{{ url_for('attendance.view', event_id=event.id) }}" class="btn btn-primary">
-                        <i class="bi bi-list-check"></i> View Attendance
-                    </a>
-                    {% else %}
-                    <a href="{{ url_for('attendance.mark', event_id=event.id) }}" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Mark Attendance
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <h5 class="card-title">Attendance QR Code</h5>
-                {% if event.qr_code_path %}
-                <img src="{{ url_for('static', filename=event.qr_code_path) }}" 
-                     alt="Event QR Code" 
-                     class="img-fluid qr-code mb-3">
-                <div>
-                    <a href="{{ url_for('static', filename=event.qr_code_path) }}" 
-                       download="event_{{ event.id }}_qr.png"
-                       class="btn btn-outline-primary">
-                        <i class="bi bi-download"></i> Download QR Code
-                    </a>
-                </div>
-                {% else %}
-                <div class="alert alert-warning">
-                    QR code not generated yet.
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
->>>>>>> 5ce8070 (Update app initialization for Gunicorn deployment)
 {% endblock %} 
