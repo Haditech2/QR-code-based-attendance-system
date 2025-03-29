@@ -74,6 +74,7 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        role = request.form.get('role', 'student')  # Default to student if not specified
         
         if User.query.filter_by(username=username).first():
             flash('Username already exists')
@@ -83,7 +84,7 @@ def register():
             flash('Email already registered')
             return redirect(url_for('auth.register'))
         
-        user = User(username=username, email=email)
+        user = User(username=username, email=email, role=role)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
@@ -92,6 +93,34 @@ def register():
         return redirect(url_for('auth.login'))
     
     return render_template('auth/register.html')
+
+@bp.route('/register/teacher', methods=['GET', 'POST'])
+def register_teacher():
+    if current_user.is_authenticated:
+        return redirect(url_for('events.index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+            return redirect(url_for('auth.register_teacher'))
+        
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered')
+            return redirect(url_for('auth.register_teacher'))
+        
+        user = User(username=username, email=email, role='teacher')
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Teacher registration successful! Please login.')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/register_teacher.html')
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -109,7 +138,6 @@ def login():
             return redirect(next_page or url_for('events.index'))
         
         flash('Invalid username or password')
-    
     return render_template('auth/login.html')
 
 @bp.route('/logout')
