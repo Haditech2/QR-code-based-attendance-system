@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="card-title">{{ event.title }} - Attendance</h2>
+            <a href="{{ url_for('events.view', id=event.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Event
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Sync Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in attendances %}
+                    <tr>
+                        <td>{{ attendance.user.username }}</td>
+                        <td>{{ attendance.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <span class="badge {% if attendance.status == 'present' %}bg-success
+                                           {% elif attendance.status == 'late' %}bg-warning
+                                           {% else %}bg-danger{% endif %}">
+                                {{ attendance.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if attendance.sync_status == 'synced' %}bg-success
+                                           {% elif attendance.sync_status == 'pending' %}bg-warning
+                                           {% else %}bg-danger{% endif %}">
+                                {{ attendance.sync_status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No attendance records yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <button id="syncButton" class="btn btn-primary" onclick="syncAttendance()">
+                <i class="bi bi-cloud-arrow-up"></i> Sync Attendance Records
+            </button>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function syncAttendance() {
+    const button = document.getElementById('syncButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-cloud-arrow-up"></i> Syncing...';
+
+    fetch('{{ url_for("attendance.sync") }}')
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(error => {
+            alert('Error syncing attendance records');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-cloud-arrow-up"></i> Sync Attendance Records';
+        });
+}
+</script>
+{% endblock %}
+{% endblock %} 
