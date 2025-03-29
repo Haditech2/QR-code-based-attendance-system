@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models.event import Event
@@ -13,11 +13,15 @@ def mark(event_id):
     event = Event.query.get_or_404(event_id)
     current_time = datetime.utcnow()
     
+    # Convert event times to UTC for comparison
+    event_start_utc = event.start_time.replace(tzinfo=None)
+    event_end_utc = event.end_time.replace(tzinfo=None)
+    
     # Check if event is active
-    if current_time < event.start_time:
+    if current_time < event_start_utc:
         flash('Event has not started yet.')
         return redirect(url_for('events.index'))
-    if current_time > event.end_time:
+    if current_time > event_end_utc:
         flash('Event has ended.')
         return redirect(url_for('events.index'))
     
@@ -31,9 +35,10 @@ def mark(event_id):
         flash('You have already marked your attendance for this event.')
         return redirect(url_for('events.index'))
     
-    # Determine attendance status
+    # Determine attendance status (late if more than 15 minutes after start)
     status = 'present'
-    if current_time > event.start_time.replace(hour=event.start_time.hour + 1):
+    late_threshold = event_start_utc + timedelta(minutes=15)
+    if current_time > late_threshold:
         status = 'late'
     
     attendance = Attendance(
