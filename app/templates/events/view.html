@@ -171,9 +171,15 @@ updateCountdown();
                     <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back to Events
                     </a>
+                    {% if current_user.role == 'teacher' %}
                     <a href="{{ url_for('attendance.view', event_id=event.id) }}" class="btn btn-primary">
                         <i class="bi bi-list-check"></i> View Attendance
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('attendance.mark', event_id=event.id) }}" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Mark Attendance
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
