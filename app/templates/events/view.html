@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 
 {% block title %}{{ event.title }} - QR Attendance System{% endblock %}
@@ -146,4 +147,60 @@ setInterval(updateCountdown, 1000);
 // Initial update
 updateCountdown();
 </script>
+=======
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - QR Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">{{ event.title }}</h2>
+                <p class="card-text">{{ event.description }}</p>
+                <div class="mb-3">
+                    <strong><i class="bi bi-calendar"></i> Start:</strong>
+                    {{ event.start_time.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="bi bi-clock"></i> End:</strong>
+                    {{ event.end_time.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Events
+                    </a>
+                    <a href="{{ url_for('attendance.view', event_id=event.id) }}" class="btn btn-primary">
+                        <i class="bi bi-list-check"></i> View Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Attendance QR Code</h5>
+                {% if event.qr_code_path %}
+                <img src="{{ url_for('static', filename=event.qr_code_path) }}" 
+                     alt="Event QR Code" 
+                     class="img-fluid qr-code mb-3">
+                <div>
+                    <a href="{{ url_for('static', filename=event.qr_code_path) }}" 
+                       download="event_{{ event.id }}_qr.png"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-download"></i> Download QR Code
+                    </a>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    QR code not generated yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+>>>>>>> 5ce8070 (Update app initialization for Gunicorn deployment)
 {% endblock %} 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 
 {% block title %}Create Event - QR Attendance System{% endblock %}
@@ -51,4 +52,59 @@
     });
 </script>
 {% endblock %}
+=======
+{% extends "base.html" %}
+
+{% block title %}Create Event - QR Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Create New Event</h2>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Event Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_time" class="form-label">Start Time</label>
+                        <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_time" class="form-label">End Time</label>
+                        <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Create Event</button>
+                        <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Set minimum date to today
+    const today = new Date().toISOString().slice(0, 16);
+    document.getElementById('start_time').min = today;
+    document.getElementById('end_time').min = today;
+
+    // Update end time minimum when start time changes
+    document.getElementById('start_time').addEventListener('change', function() {
+        document.getElementById('end_time').min = this.value;
+        if (document.getElementById('end_time').value < this.value) {
+            document.getElementById('end_time').value = this.value;
+        }
+    });
+</script>
+{% endblock %}
+>>>>>>> 5ce8070 (Update app initialization for Gunicorn deployment)
 {% endblock %} 
