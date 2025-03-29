@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+import os
+from config import config
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -25,4 +27,7 @@ def create_app(config_object):
     with app.app_context():
         db.create_all()
 
-    return app 
+    return app
+
+# Create the application instance
+app = create_app(config[os.getenv('FLASK_ENV', 'default')])
