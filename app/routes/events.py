@@ -1,7 +1,7 @@
 import os
 import qrcode
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_from_directory
 from flask_login import login_required, current_user
 from app.models.event import Event
 from app import db
@@ -106,4 +106,50 @@ def delete(id):
     db.session.commit()
     
     flash('Event deleted successfully!')
-    return redirect(url_for('events.index')) 
+    return redirect(url_for('events.index'))
+
+@bp.route('/<int:id>/qr')
+@login_required
+def qr_code(id):
+    event = Event.query.get_or_404(id)
+    if current_user.role == 'teacher' and event.creator_id != current_user.id:
+        flash('You do not have permission to view this event.')
+        return redirect(url_for('events.index'))
+    
+    # If QR code doesn't exist, generate it
+    if not event.qr_code_path:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        
+        # Create the URL for attendance marking
+        attendance_url = f"{request.host_url}attendance/mark/{event.id}"
+        
+        qr.add_data(attendance_url)
+        qr.make(fit=True)
+        
+        # Ensure the qrcodes directory exists
+        qr_dir = os.path.join(current_app.config['UPLOAD_FOLDER'])
+        os.makedirs(qr_dir, exist_ok=True)
+        
+        # Generate the QR code image
+        qr_path = f'qrcodes/event_{event.id}.png'
+        full_path = os.path.join(qr_dir, f'event_{event.id}.png')
+        
+        try:
+            qr.make_image(fill_color="black", back_color="white").save(full_path)
+            event.qr_code_path = qr_path
+            db.session.commit()
+        except Exception as e:
+            print(f"Error generating QR code: {str(e)}")
+            flash('Error generating QR code. Please try again.')
+            return redirect(url_for('events.view', id=event.id))
+    
+    # Serve the QR code image
+    return send_from_directory(
+        os.path.join(current_app.config['UPLOAD_FOLDER']),
+        f'event_{event.id}.png'
+    ) 
