@@ -25,12 +25,20 @@ def create():
         description = request.form.get('description')
         
         # Parse the datetime strings and convert to UTC
-        start_time = datetime.strptime(request.form.get('start_time'), '%Y-%m-%dT%H:%M')
-        end_time = datetime.strptime(request.form.get('end_time'), '%Y-%m-%dT%H:%M')
+        start_time_str = request.form.get('start_time')
+        end_time_str = request.form.get('end_time')
         
         # Add debug logging
-        print(f"Creating event with start time: {start_time}")
-        print(f"Creating event with end time: {end_time}")
+        print(f"Received start time string: {start_time_str}")
+        print(f"Received end time string: {end_time_str}")
+        
+        # Parse the datetime strings
+        start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+        end_time = datetime.fromisoformat(end_time_str.replace('Z', '+00:00'))
+        
+        # Add debug logging
+        print(f"Parsed start time: {start_time}")
+        print(f"Parsed end time: {end_time}")
         
         event = Event(
             title=title,
