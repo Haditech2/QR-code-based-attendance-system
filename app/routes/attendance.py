@@ -12,11 +12,11 @@ bp = Blueprint('attendance', __name__, url_prefix='/attendance')
 def mark(event_id):
     event = Event.query.get_or_404(event_id)
     
-    # Get current time in UTC
-    current_time = datetime.utcnow()
+    # Get current time in local timezone
+    current_time = datetime.now()
     
     # Add debug logging
-    print(f"Current time (UTC): {current_time}")
+    print(f"Current time: {current_time}")
     print(f"Event start time: {event.start_time}")
     print(f"Event end time: {event.end_time}")
     
