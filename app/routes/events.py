@@ -34,16 +34,11 @@ def create():
         
         try:
             # Parse as naive datetime (local time)
-            local_start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
-            local_end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
-            
-            # Convert to UTC
-            start_time = local_start_time.astimezone()
-            end_time = local_end_time.astimezone()
+            start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+            end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
             
             # Add debug logging
-            print(f"Local times - Start: {local_start_time}, End: {local_end_time}")
-            print(f"UTC times - Start: {start_time}, End: {end_time}")
+            print(f"Parsed times - Start: {start_time}, End: {end_time}")
             
             event = Event(
                 title=title,
