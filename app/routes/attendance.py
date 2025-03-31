@@ -12,22 +12,22 @@ bp = Blueprint('attendance', __name__, url_prefix='/attendance')
 def mark(event_id):
     event = Event.query.get_or_404(event_id)
     
-    # Get current time in UTC
-    current_time = datetime.utcnow()
+    # Get current time in local timezone
+    current_time = datetime.now()
     
     # Add debug logging
-    print(f"Current time (UTC): {current_time}")
-    print(f"Event start time (UTC): {event.start_time}")
-    print(f"Event end time (UTC): {event.end_time}")
+    print(f"Current time: {current_time}")
+    print(f"Event start time: {event.start_time}")
+    print(f"Event end time: {event.end_time}")
     
     # Check if event is active
     if current_time < event.start_time:
-        print(f"Event not started yet. Current time (UTC): {current_time}, Start time (UTC): {event.start_time}")
+        print(f"Event not started yet. Current time: {current_time}, Start time: {event.start_time}")
         flash('This event has not started yet.')
         return redirect(url_for('events.view', id=event_id))
     
     if current_time > event.end_time:
-        print(f"Event has ended. Current time (UTC): {current_time}, End time (UTC): {event.end_time}")
+        print(f"Event has ended. Current time: {current_time}, End time: {event.end_time}")
         flash('This event has ended.')
         return redirect(url_for('events.view', id=event_id))
     
@@ -47,10 +47,10 @@ def mark(event_id):
     
     if current_time > late_threshold:
         status = 'late'
-        print(f"Marking attendance as late. Current time (UTC): {current_time}, Late threshold (UTC): {late_threshold}")
+        print(f"Marking attendance as late. Current time: {current_time}, Late threshold: {late_threshold}")
     else:
         status = 'present'
-        print(f"Marking attendance as present. Current time (UTC): {current_time}, Late threshold (UTC): {late_threshold}")
+        print(f"Marking attendance as present. Current time: {current_time}, Late threshold: {late_threshold}")
     
     # Create attendance record
     attendance = Attendance(
